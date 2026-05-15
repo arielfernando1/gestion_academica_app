@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'dart:async';
+
 import '../models/evento.dart';
 import '../services/database_service.dart';
+import '../services/sync_service.dart';
 
 class EventoFormScreen extends StatefulWidget {
   const EventoFormScreen({super.key});
@@ -110,6 +113,7 @@ class _EventoFormScreenState extends State<EventoFormScreen> {
     );
 
     await DatabaseService.instance.insertEvento(evento);
+    unawaited(SyncService.instance.sync());
 
     if (!mounted) return;
 
