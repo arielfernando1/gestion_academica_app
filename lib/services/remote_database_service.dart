@@ -8,6 +8,7 @@ abstract class IRemoteDatabaseService {
   Future<List<Evento>> getEventos();
   Future<void> deleteEvento(int remoteId);
   Future<void> updateEstado(int remoteId, String estado, String updatedAt);
+  Future<bool> testConnection();
   Future<void> close();
 }
 
@@ -125,6 +126,16 @@ class RemoteDatabaseService implements IRemoteDatabaseService {
       'UPDATE eventos SET estado = :estado, updated_at = :updated_at WHERE id = :id',
       {'estado': estado, 'updated_at': updatedAt, 'id': remoteId},
     );
+  }
+
+  @override
+  Future<bool> testConnection() async {
+    try {
+      await _getConnection();
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   @override
