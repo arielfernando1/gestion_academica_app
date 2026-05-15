@@ -1,3 +1,11 @@
+# Large archives / SDK downloads
+*.tar.xz
+*.tar.gz
+*.zip
+
+# Local backups
+lib_backup/
+
 # Miscellaneous
 *.class
 *.log
