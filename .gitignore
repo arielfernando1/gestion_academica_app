@@ -1,3 +1,7 @@
+# Secrets — never commit
+.env
+lib/config/db_config.dart
+
 # Large archives / SDK downloads
 *.tar.xz
 *.tar.gz
