@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/evento.dart';
 import '../services/database_service.dart';
+import '../services/sync_service.dart';
 import '../widgets/evento_card.dart';
 import 'evento_form_screen.dart';
 import 'help_screen.dart';
@@ -16,11 +17,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<Evento> _eventos = [];
   bool _cargando = true;
+  bool _syncing = false;
+  bool _syncFailed = false;
 
   @override
   void initState() {
     super.initState();
     _cargarEventos();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _sync());
   }
 
   Future<void> _cargarEventos() async {
@@ -36,6 +40,32 @@ class _HomeScreenState extends State<HomeScreen> {
       _eventos = eventos;
       _cargando = false;
     });
+  }
+
+  Future<void> _sync() async {
+    if (_syncing) return;
+    setState(() {
+      _syncing = true;
+      _syncFailed = false;
+    });
+
+    final success = await SyncService.instance.sync();
+
+    if (!mounted) return;
+
+    setState(() {
+      _syncing = false;
+      _syncFailed = !success;
+    });
+
+    if (success) {
+      await _cargarEventos();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sincronización completada')),
+        );
+      }
+    }
   }
 
   Future<void> _abrirFormulario() async {
@@ -82,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (confirmar == true && evento.id != null) {
-      await DatabaseService.instance.deleteEvento(evento.id!);
+      await SyncService.instance.deleteEvento(evento.id!, evento.remoteId);
       await _cargarEventos();
 
       if (!mounted) return;
@@ -185,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Presione el botón “Nuevo” para registrar una tarea, examen, clase o entrega.',
+                'Presione el botón "Nuevo" para registrar una tarea, examen, clase o entrega.',
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -232,6 +262,26 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Agenda Académica'),
         actions: [
+          if (_syncing)
+            const Padding(
+              padding: EdgeInsets.all(14),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            )
+          else
+            IconButton(
+              tooltip: _syncFailed
+                  ? 'Sin conexión con MySQL. Reintentar'
+                  : 'Sincronizar con MySQL',
+              icon: Icon(
+                _syncFailed ? Icons.sync_problem : Icons.sync,
+                color: _syncFailed ? Colors.orange : null,
+              ),
+              onPressed: _sync,
+            ),
           Center(
             child: Padding(
               padding: const EdgeInsets.only(right: 8),
