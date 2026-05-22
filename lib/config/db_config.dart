@@ -1,8 +1,9 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class DbConfig {
-  // Configure these values to match your MySQL server
-  static const String mysqlHost = 'your-mysql-host.com';
-  static const int mysqlPort = 3306;
-  static const String mysqlDatabase = 'agenda_academica';
-  static const String mysqlUser = 'your_username';
-  static const String mysqlPassword = 'your_password';
+  static String get mysqlHost => dotenv.env['MYSQL_HOST'] ?? '';
+  static int get mysqlPort => int.tryParse(dotenv.env['MYSQL_PORT'] ?? '3306') ?? 3306;
+  static String get mysqlDatabase => dotenv.env['MYSQL_DATABASE'] ?? '';
+  static String get mysqlUser => dotenv.env['MYSQL_USER'] ?? '';
+  static String get mysqlPassword => dotenv.env['MYSQL_PASSWORD'] ?? '';
 }
