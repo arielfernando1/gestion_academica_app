@@ -50,6 +50,9 @@ class MockRemoteDatabaseService implements IRemoteDatabaseService {
   }
 
   @override
+  Future<bool> testConnection() async => !shouldFail;
+
+  @override
   Future<void> close() async {}
 }
 
