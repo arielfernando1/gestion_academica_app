@@ -8,6 +8,7 @@ class Evento {
   final String hora;
   final String descripcion;
   final String estado;
+  final String userEmail;
   final String createdAt;
   final String updatedAt;
   final bool synced;
@@ -22,6 +23,7 @@ class Evento {
     required this.hora,
     required this.descripcion,
     this.estado = 'pendiente',
+    this.userEmail = '',
     required this.createdAt,
     String? updatedAt,
     this.synced = false,
@@ -38,6 +40,7 @@ class Evento {
       'hora': hora,
       'descripcion': descripcion,
       'estado': estado,
+      'user_email': userEmail,
       'created_at': createdAt,
       'updated_at': updatedAt,
       'synced': synced ? 1 : 0,
@@ -55,6 +58,7 @@ class Evento {
       hora: map['hora'] as String,
       descripcion: map['descripcion'] as String? ?? '',
       estado: map['estado'] as String? ?? 'pendiente',
+      userEmail: map['user_email'] as String? ?? '',
       createdAt: map['created_at'] as String,
       updatedAt: map['updated_at'] as String?,
       synced: (map['synced'] as int? ?? 0) == 1,
@@ -71,6 +75,7 @@ class Evento {
     String? hora,
     String? descripcion,
     String? estado,
+    String? userEmail,
     String? createdAt,
     String? updatedAt,
     bool? synced,
@@ -85,6 +90,7 @@ class Evento {
       hora: hora ?? this.hora,
       descripcion: descripcion ?? this.descripcion,
       estado: estado ?? this.estado,
+      userEmail: userEmail ?? this.userEmail,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       synced: synced ?? this.synced,

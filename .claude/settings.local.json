@@ -4,7 +4,9 @@
       "PowerShell(Get-ChildItem *)",
       "PowerShell(Get-WmiObject *)",
       "PowerShell(Stop-Process *)",
-      "Bash(flutter *)"
+      "Bash(flutter *)",
+      "Bash(Get-ChildItem *)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\arielpc\\\\dev\\\\gestion_academica_app\\\\lib\" -Recurse -Force | Where-Object { $_.PSIsContainer -or $_.Extension -eq '.dart' } | Sort-Object FullName)"
     ]
   }
 }

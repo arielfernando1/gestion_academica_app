@@ -2,6 +2,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../models/evento.dart';
+import 'session_service.dart';
 
 class DatabaseService {
   DatabaseService._internal();
@@ -22,7 +23,7 @@ class DatabaseService {
 
     return openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDatabase,
       onUpgrade: _upgradeDatabase,
     );
@@ -40,6 +41,7 @@ class DatabaseService {
         hora TEXT NOT NULL,
         descripcion TEXT,
         estado TEXT DEFAULT 'pendiente',
+        user_email TEXT DEFAULT '',
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
         synced INTEGER DEFAULT 0
@@ -62,18 +64,30 @@ class DatabaseService {
         'UPDATE eventos SET updated_at = created_at WHERE updated_at IS NULL',
       );
     }
+    if (oldVersion < 3) {
+      await db.execute(
+        "ALTER TABLE eventos ADD COLUMN user_email TEXT DEFAULT ''",
+      );
+    }
   }
 
   Future<int> insertEvento(Evento evento) async {
     final db = await database;
-    final map = Map<String, dynamic>.from(evento.toMap())..remove('id');
+    final map = Map<String, dynamic>.from(evento.toMap())
+      ..remove('id')
+      ..['user_email'] = evento.userEmail.isNotEmpty
+          ? evento.userEmail
+          : (SessionService.instance.userEmail ?? '');
     return db.insert('eventos', map);
   }
 
   Future<List<Evento>> getEventos() async {
     final db = await database;
+    final userEmail = SessionService.instance.userEmail ?? '';
     final result = await db.query(
       'eventos',
+      where: 'user_email = ?',
+      whereArgs: [userEmail],
       orderBy: 'fecha ASC, hora ASC',
     );
     return result.map(Evento.fromMap).toList();
@@ -81,7 +95,12 @@ class DatabaseService {
 
   Future<List<Evento>> getUnsyncedEventos() async {
     final db = await database;
-    final result = await db.query('eventos', where: 'synced = 0');
+    final userEmail = SessionService.instance.userEmail ?? '';
+    final result = await db.query(
+      'eventos',
+      where: 'synced = 0 AND user_email = ?',
+      whereArgs: [userEmail],
+    );
     return result.map(Evento.fromMap).toList();
   }
 
@@ -105,6 +124,15 @@ class DatabaseService {
       where: 'id = ?',
       whereArgs: [localId],
     );
+  }
+
+  Future<int> updateEvento(Evento evento) async {
+    final db = await database;
+    final map = Map<String, dynamic>.from(evento.toMap())
+      ..remove('id')
+      ..['updated_at'] = DateTime.now().toIso8601String()
+      ..['synced'] = 0;
+    return db.update('eventos', map, where: 'id = ?', whereArgs: [evento.id]);
   }
 
   Future<int> deleteEvento(int id) async {

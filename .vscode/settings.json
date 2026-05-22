@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "C:/Users/arielpc/dev/gestion_academica_app/linux"
+    "cmake.sourceDirectory": "C:/Users/arielpc/dev/gestion_academica_app/linux",
+    "java.configuration.updateBuildConfiguration": "automatic"
 }

@@ -3,6 +3,7 @@ import 'package:mysql_client/mysql_client.dart';
 
 import '../config/db_config.dart';
 import '../models/evento.dart';
+import 'session_service.dart';
 
 abstract class IRemoteDatabaseService {
   Future<int> insertEvento(Evento evento);
@@ -66,10 +67,19 @@ class RemoteDatabaseService implements IRemoteDatabaseService {
         hora VARCHAR(20) NOT NULL,
         descripcion TEXT,
         estado VARCHAR(50) DEFAULT 'pendiente',
+        user_email VARCHAR(255) DEFAULT '',
         created_at VARCHAR(30) NOT NULL,
         updated_at VARCHAR(30) NOT NULL
       )
     ''');
+    // Agrega la columna si la tabla ya existía sin ella
+    try {
+      await _connection!.execute(
+        "ALTER TABLE eventos ADD COLUMN user_email VARCHAR(255) DEFAULT ''",
+      );
+    } catch (_) {
+      // La columna ya existe, no hay problema
+    }
   }
 
   @override
@@ -78,8 +88,8 @@ class RemoteDatabaseService implements IRemoteDatabaseService {
     final conn = await _getConnection();
     final result = await conn.execute(
       'INSERT INTO eventos '
-      '(titulo, materia, tipo, fecha, hora, descripcion, estado, created_at, updated_at) '
-      'VALUES (:titulo, :materia, :tipo, :fecha, :hora, :descripcion, :estado, :created_at, :updated_at)',
+      '(titulo, materia, tipo, fecha, hora, descripcion, estado, user_email, created_at, updated_at) '
+      'VALUES (:titulo, :materia, :tipo, :fecha, :hora, :descripcion, :estado, :user_email, :created_at, :updated_at)',
       {
         'titulo': evento.titulo,
         'materia': evento.materia,
@@ -88,6 +98,9 @@ class RemoteDatabaseService implements IRemoteDatabaseService {
         'hora': evento.hora,
         'descripcion': evento.descripcion,
         'estado': evento.estado,
+        'user_email': evento.userEmail.isNotEmpty
+            ? evento.userEmail
+            : (SessionService.instance.userEmail ?? ''),
         'created_at': evento.createdAt,
         'updated_at': evento.updatedAt,
       },
@@ -101,8 +114,10 @@ class RemoteDatabaseService implements IRemoteDatabaseService {
   Future<List<Evento>> getEventos() async {
     debugPrint('[DB] getEventos');
     final conn = await _getConnection();
+    final userEmail = SessionService.instance.userEmail ?? '';
     final result = await conn.execute(
-      'SELECT * FROM eventos ORDER BY fecha ASC, hora ASC',
+      'SELECT * FROM eventos WHERE user_email = :user_email ORDER BY fecha ASC, hora ASC',
+      {'user_email': userEmail},
     );
     debugPrint('[DB] getEventos returned ${result.rows.length} rows');
     return result.rows.map((row) {
@@ -115,6 +130,7 @@ class RemoteDatabaseService implements IRemoteDatabaseService {
         hora: row.colByName('hora') ?? '',
         descripcion: row.colByName('descripcion') ?? '',
         estado: row.colByName('estado') ?? 'pendiente',
+        userEmail: row.colByName('user_email') ?? '',
         createdAt: row.colByName('created_at') ?? '',
         updatedAt: row.colByName('updated_at'),
         synced: true,
