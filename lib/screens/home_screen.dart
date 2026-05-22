@@ -4,6 +4,7 @@ import '../models/evento.dart';
 import '../services/database_service.dart';
 import '../services/sync_service.dart';
 import '../widgets/evento_card.dart';
+import 'connection_log_screen.dart';
 import 'evento_form_screen.dart';
 import 'help_screen.dart';
 
@@ -86,6 +87,15 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => const HelpScreen(),
+      ),
+    );
+  }
+
+  void _abrirConexion() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const ConnectionLogScreen(),
       ),
     );
   }
@@ -289,6 +299,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 '$totalEventos evento(s)',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
+            ),
+          ),
+          IconButton(
+            tooltip: 'Estado de conexión',
+            onPressed: _abrirConexion,
+            icon: Icon(
+              Icons.monitor_heart_outlined,
+              color: _syncFailed ? Colors.orange : null,
             ),
           ),
           IconButton(

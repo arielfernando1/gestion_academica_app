@@ -108,10 +108,7 @@ class RemoteDatabaseService implements IRemoteDatabaseService {
   @override
   Future<void> deleteEvento(int remoteId) async {
     final conn = await _getConnection();
-    await conn.execute(
-      'DELETE FROM eventos WHERE id = :id',
-      {'id': remoteId},
-    );
+    await conn.execute('DELETE FROM eventos WHERE id = :id', {'id': remoteId});
   }
 
   @override

@@ -5,11 +5,9 @@ class SyncService {
   final DatabaseService _local;
   final IRemoteDatabaseService _remote;
 
-  SyncService({
-    DatabaseService? local,
-    IRemoteDatabaseService? remote,
-  })  : _local = local ?? DatabaseService.instance,
-        _remote = remote ?? RemoteDatabaseService.instance;
+  SyncService({DatabaseService? local, IRemoteDatabaseService? remote})
+    : _local = local ?? DatabaseService.instance,
+      _remote = remote ?? RemoteDatabaseService.instance;
 
   static final SyncService instance = SyncService();
 
